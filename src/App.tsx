@@ -38,7 +38,7 @@ const routeComponentMap = {
   route1: ['Home', 'Sidebar'],
   route2: ['Home'],
   route3: ['Sidebar'],
-  '/': ['Home'],
+  '/': ['Home', 'Sidebar'],
 };
 
 function App() {
@@ -46,12 +46,11 @@ function App() {
   const [user, _setUser] = useState({
     name: 's',
     email: 's@.com',
-    accessLevel: ACCESS_LEVEL.ADMIN,
+    accessLevel: ACCESS_LEVEL.USER,
   });
 
   useEffect(() => {
     const onPopState = () => {
-      console.log(window.location.pathname);
       setCurrentPath(window.location.pathname);
     };
     window.addEventListener('popstate', onPopState);
@@ -74,14 +73,23 @@ function App() {
   return (
     <div>
       {MemoizedComponentList.map(({ Component, ComponentName }) => {
-        // If component is both available on the current route and accessable by user, then only render
+        // If component is both available on the current route and accessible by user, then only render
         const renderComponent =
-          // @ts-ignore
+          // @ts-expect-error add types later
           routeComponentMap[currentRoute.path].includes(ComponentName) &&
           AccessToComponentMapping[user.accessLevel].includes(ComponentName);
+
         if (renderComponent) return <Component key={ComponentName} />;
         return null;
       })}
+      {routes.map((route) => (
+          <button key={route.path} onClick={() => {
+            setCurrentPath(route.path)
+            window.history.pushState({}, '', route.path);
+          }}>
+            {route.path === '/' ? 'Home' : route.path}
+          </button>
+      ))}
     </div>
   );
 }
